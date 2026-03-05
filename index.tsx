@@ -12,6 +12,7 @@ import {
 import { Type, GenerateContentParameters, GoogleGenAI } from "@google/genai";
 import { apiService } from './services/apiService';
 import { paypalService } from './services/paypalService';
+import { Analytics } from '@vercel/analytics/react';
 
 // Add global window types for AI Studio
 declare global {
@@ -1609,7 +1610,7 @@ const EngineDetailsModal = ({
                     }));
                     
                     addNotification({
-                        category: 'referrals',
+                        category: 'referral',
                         severity: 'success',
                         title: 'New Real User Uplink',
                         message: 'A new user has joined the network via your signature.'
@@ -3180,7 +3181,7 @@ const EngineDetailsModal = ({
                                <Button variant="outline" size="sm" className="w-full !text-[9px]" onClick={async () => { 
                                    try { 
                                        await navigator.clipboard.writeText(`https://autoincome.sovereign/join/${user?.referralCode}`); 
-                                       addNotification({ category: 'referrals', severity: 'success', title: 'Link Copied', message: 'Referral link ready for distribution.' });
+                                       addNotification({ category: 'referral', severity: 'success', title: 'Link Copied', message: 'Referral link ready for distribution.' });
                                    } catch(e) { console.error(e); } 
                                }}>Copy Direct Link</Button>
                                
@@ -4052,6 +4053,7 @@ const EngineDetailsModal = ({
             onUpdate={handleUpdateCredentials}
         />
       )}
+      <Analytics />
     </div>
   );
 };
