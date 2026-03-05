@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoIncome Engines™ | Sovereign Wealth Automation & AI Revenue Nodes</title>
+    <meta name="description" content="Unlock institutional-grade wealth automation with AutoIncome Engines™. Deploy autonomous neural nodes, generate passive yield, and manage sovereign digital assets with high-fidelity AI strategies.">
+    <meta name="keywords" content="sovereign wealth automation, AI income engines, passive income nodes, digital asset management, neural revenue models, autonomous yield generation, financial sovereignty">
+    <meta name="author" content="AutoIncome Engines™">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://autoincome-engines.com/">
+    <meta property="og:title" content="AutoIncome Engines™ | Sovereign Wealth Automation">
+    <meta property="og:description" content="Deploy institutional AI nodes to generate sovereign wealth. Automated digital arbitrage, SaaS reselling, and liquidity management.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200&h=630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://autoincome-engines.com/">
+    <meta property="twitter:title" content="AutoIncome Engines™ | Sovereign Wealth Automation">
+    <meta property="twitter:description" content="Deploy institutional AI nodes to generate sovereign wealth. Automated digital arbitrage, SaaS reselling, and liquidity management.">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200&h=630">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        .shadow-glow {
+            box-shadow: 0 0 50px -10px rgba(0, 112, 243, 0.3);
+        }
+        .shadow-glow-sm {
+            box-shadow: 0 0 20px -5px rgba(0, 112, 243, 0.3);
+        }
+        .shadow-3xl {
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+            animation: scroll 40s linear infinite;
+        }
+        @keyframes neural-scan {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 0.1; }
+            100% { transform: translateY(100%); opacity: 0; }
+        }
+        .animate-neural-scan {
+            animation: neural-scan 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        @keyframes ken-burns {
+            0% { transform: scale(1) translate(0, 0); }
+            25% { transform: scale(1.05) translate(-1%, 1%); }
+            50% { transform: scale(1.1) translate(1%, -1%); }
+            75% { transform: scale(1.05) translate(-1%, -1%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-ken-burns {
+            animation: ken-burns 30s ease-in-out infinite;
+        }
+        @keyframes shimmer-sweep {
+            0% { transform: translateX(-150%) skewX(-20deg); }
+            100% { transform: translateX(150%) skewX(-20deg); }
+        }
+        .animate-shimmer-sweep {
+            animation: shimmer-sweep 8s linear infinite;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .blueprint-bg {
+            background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        @keyframes grid-pulse {
+          0%, 100% { opacity: 0.01; }
+          50% { opacity: 0.04; }
+        }
+        .animate-grid-pulse {
+          animation: grid-pulse 25s ease-in-out infinite;
+        }
+
+        /* Success Confirmation Keyframes */
+        @keyframes success-check-pop {
+            0% { transform: scale(0.5) rotate(-20deg); opacity: 0; }
+            70% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .animate-success-check {
+            animation: success-check-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes success-row-pulse {
+            0% { background: rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            20% { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.6); box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3); }
+            100% { background: rgba(16, 185, 129, 0); border-color: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .animate-success-row {
+            animation: success-row-pulse 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Landing Page Specific Utilities */
+        .text-gradient {
+            background: linear-gradient(to right, #ffffff, #94a3b8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <!-- Pre-Hydration SEO Content -->
+        <div class="min-h-screen flex items-center justify-center p-8 text-center space-y-4">
+            <div>
+                <h1 class="text-4xl font-black italic uppercase tracking-tighter text-white">AutoIncome Engines™</h1>
+                <p class="text-white/40 uppercase tracking-widest text-xs mt-2">Loading Sovereign Infrastructure...</p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[build]
+  # Remove 'base' because the project is at the repository root
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  # Essential for Single Page Applications (SPA) like React/Vite
+  from = "/*"
+  to = "/index.html"
+  status = 200
