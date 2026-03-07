@@ -4,6 +4,8 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { loadData, saveData } from './utils/db.js';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -19,6 +21,9 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
+
+// Mount Auth Routes
+app.use('/api/auth', authRouter);
 
 // Root Route: Health Check
 app.get('/', (req, res) => {
@@ -233,21 +238,6 @@ app.post('/api/config/update-credentials', async (req, res) => {
   }
 });
 
-const DATA_FILE = path.resolve(process.cwd(), 'data.json');
-
-// Helper: Load Data
-const loadData = () => {
-    if (!fs.existsSync(DATA_FILE)) {
-        return { referrals: [] };
-    }
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-};
-
-// Helper: Save Data
-const saveData = (data) => {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-};
-
 // Route: Simulate Referral (Live Persistence)
 app.post('/api/referrals/simulate', async (req, res) => {
     try {
@@ -377,12 +367,13 @@ app.get('/api/referrals/:userId', (req, res) => {
     }
 });
 
-// Start Server only if not running in a serverless environment
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`PayPal Mode: ${process.env.PAYPAL_MODE || 'sandbox'}`);
-  });
+// Force start for debugging
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    console.log('Starting server...');
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`PayPal Mode: ${process.env.PAYPAL_MODE || 'sandbox'}`);
+    });
 }
 
 export default app;

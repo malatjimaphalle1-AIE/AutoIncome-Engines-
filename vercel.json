@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "name": "auto-income-engines",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/server/index.js"
+      "destination": "/api/index.js"
     },
     {
       "source": "/(.*)",

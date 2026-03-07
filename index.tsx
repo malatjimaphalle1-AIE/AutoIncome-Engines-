@@ -12,6 +12,7 @@ import {
 import { Type, GenerateContentParameters, GoogleGenAI } from "@google/genai";
 import { apiService } from './services/apiService';
 import { paypalService } from './services/paypalService';
+import { openRouterPaymentService } from './services/openRouterPaymentService';
 
 // Add global window types for AI Studio
 declare global {
@@ -234,6 +235,214 @@ const Sparkline = ({ data, color = "#3b82f6", height = 40, width = 120, animate 
         className={`${animate ? 'drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`} 
       />
     </svg>
+  );
+};
+
+const DepositModal = ({ onClose, onDeposit }: { onClose: () => void, onDeposit: (details: any, amount: number) => Promise<void> }) => {
+  const [amount, setAmount] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+
+  const handleSubmit = async () => {
+    if (!amount || !cardNumber || !expiry || !cvc || !cardName) return;
+    setLoading(true);
+    try {
+        await onDeposit({
+            number: cardNumber,
+            expiry,
+            cvc,
+            name: cardName
+        }, parseFloat(amount));
+        setStep(2); // Success
+    } catch (e: any) {
+        alert("Payment Failed: " + (e.message || "Unknown Error"));
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  if (step === 2) {
+      return (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <Card blueprint className="max-w-md w-full border-blue-500/40 bg-[#020202] p-10 text-center space-y-8 shadow-[0_0_100px_rgba(59,130,246,0.2)]">
+            <div className="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto border-2 border-blue-500 animate-success-check">
+              <Check size={40} className="text-blue-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-tight">Funds<br/><span className="text-blue-400">Secured</span></h2>
+              <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">Open_Router_API Settlement Confirmed</p>
+            </div>
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4 text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-[8px] font-black uppercase text-white/30 tracking-widest">Amount Credited</span>
+                <span className="text-xl font-black italic text-white">+${parseFloat(amount).toFixed(2)}</span>
+              </div>
+            </div>
+            <Button variant="primary" className="w-full h-14" onClick={onClose}>Return to Vault</Button>
+          </Card>
+        </div>
+      );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+      <Card blueprint className="max-w-md w-full border-blue-500/40 bg-[#020202] p-10 space-y-8 shadow-[0_0_100px_rgba(59,130,246,0.2)]">
+        <div className="flex justify-between items-start">
+             <div className="space-y-2">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white leading-tight">Instant <span className="text-blue-500">Deposit</span></h2>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">Open_Router_API Secure Gateway</p>
+             </div>
+             <button onClick={onClose} className="text-white/20 hover:text-white"><X size={24}/></button>
+        </div>
+
+        <div className="space-y-6">
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Deposit Amount ($)</label>
+                <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">$</span>
+                    <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 pl-8 text-lg font-mono text-white outline-none focus:border-blue-500 transition-all" placeholder="0.00" />
+                </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Cardholder Name</label>
+                    <input value={cardName} onChange={e => setCardName(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-blue-500 transition-all" placeholder="NAME ON CARD" />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Card Number</label>
+                    <div className="relative">
+                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+                        <input value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 pl-10 text-xs font-mono text-white outline-none focus:border-blue-500 transition-all" placeholder="0000 0000 0000 0000" maxLength={19} />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Expiry</label>
+                        <input value={expiry} onChange={e => setExpiry(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-blue-500 transition-all" placeholder="MM/YY" maxLength={5} />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">CVC</label>
+                        <input type="password" value={cvc} onChange={e => setCvc(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-blue-500 transition-all" placeholder="123" maxLength={4} />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <Button variant="primary" className="w-full h-14" onClick={handleSubmit} loading={loading} icon={CreditCard}>
+            {loading ? 'Processing via Open_Router...' : 'Process Secure Payment'}
+        </Button>
+        <p className="text-[9px] text-center text-white/20 uppercase tracking-widest">Secured by Open_Router_API Neural Encryption</p>
+      </Card>
+    </div>
+  );
+};
+
+const WithdrawalModal = ({ onClose, onWithdraw, balance }: { onClose: () => void, onWithdraw: (details: any, amount: number) => Promise<void>, balance: number }) => {
+  const [amount, setAmount] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [routingNumber, setRoutingNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
+
+  const handleSubmit = async () => {
+    if (!amount || !accountNumber || !routingNumber || !accountName) return;
+    if (parseFloat(amount) > balance) {
+        alert("Insufficient Balance");
+        return;
+    }
+    setLoading(true);
+    try {
+        await onWithdraw({
+            account: accountNumber,
+            routing: routingNumber,
+            name: accountName
+        }, parseFloat(amount));
+        setStep(2); // Success
+    } catch (e: any) {
+        alert("Withdrawal Failed: " + (e.message || "Unknown Error"));
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  if (step === 2) {
+      return (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <Card blueprint className="max-w-md w-full border-emerald-500/40 bg-[#020202] p-10 text-center space-y-8 shadow-[0_0_100px_rgba(16,185,129,0.2)]">
+            <div className="w-20 h-20 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 animate-success-check">
+              <Check size={40} className="text-emerald-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-tight">Funds<br/><span className="text-emerald-400">Dispatched</span></h2>
+              <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">Instant Bank Transfer Initiated</p>
+            </div>
+            <div className="p-6 bg-white/5 rounded-3xl border border-white/10 space-y-4 text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-[8px] font-black uppercase text-white/30 tracking-widest">Amount Debited</span>
+                <span className="text-xl font-black italic text-white">-${parseFloat(amount).toFixed(2)}</span>
+              </div>
+            </div>
+            <Button variant="primary" className="w-full h-14 bg-emerald-600 hover:bg-emerald-500" onClick={onClose}>Return to Vault</Button>
+          </Card>
+        </div>
+      );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+      <Card blueprint className="max-w-md w-full border-emerald-500/40 bg-[#020202] p-10 space-y-8 shadow-[0_0_100px_rgba(16,185,129,0.2)]">
+        <div className="flex justify-between items-start">
+             <div className="space-y-2">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white leading-tight">Instant <span className="text-emerald-500">Withdrawal</span></h2>
+                <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">Secure Bank Transfer Protocol</p>
+             </div>
+             <button onClick={onClose} className="text-white/20 hover:text-white"><X size={24}/></button>
+        </div>
+
+        <div className="space-y-6">
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Withdrawal Amount ($)</label>
+                <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">$</span>
+                    <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 pl-8 text-lg font-mono text-white outline-none focus:border-emerald-500 transition-all" placeholder="0.00" />
+                </div>
+                <div className="flex justify-between text-[9px] uppercase tracking-widest font-black">
+                    <span className="text-white/30">Available: ${(balance || 0).toFixed(2)}</span>
+                    <button onClick={() => setAmount(balance.toString())} className="text-emerald-400 hover:text-white transition-colors">Max</button>
+                </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Account Holder Name</label>
+                    <input value={accountName} onChange={e => setAccountName(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-emerald-500 transition-all" placeholder="FULL NAME" />
+                </div>
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Account Number</label>
+                    <div className="relative">
+                        <Landmark className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+                        <input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 pl-10 text-xs font-mono text-white outline-none focus:border-emerald-500 transition-all" placeholder="0000000000" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-white/40 tracking-widest">Routing Number</label>
+                    <input value={routingNumber} onChange={e => setRoutingNumber(e.target.value)} className="w-full bg-white/5 border-2 border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-emerald-500 transition-all" placeholder="000000000" maxLength={9} />
+                </div>
+            </div>
+        </div>
+
+        <Button variant="success" className="w-full h-14 bg-emerald-600 hover:bg-emerald-500" onClick={handleSubmit} loading={loading} icon={Banknote}>
+            {loading ? 'Initiating Transfer...' : 'Confirm Withdrawal'}
+        </Button>
+        <p className="text-[9px] text-center text-white/20 uppercase tracking-widest">Funds typically arrive within minutes via RTP Network</p>
+      </Card>
+    </div>
   );
 };
 
@@ -1137,19 +1346,139 @@ const EngineDetailsModal = ({
 
 // --- Main App ---
 
-  const App = () => {
-  const [view, setView] = useState(() => {
-    try {
-      const saved = localStorage.getItem('sovereign_core_view');
-      return saved || 'landing';
-    } catch (e) { return 'landing'; }
-  });
+  class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-  useEffect(() => {
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-8 font-mono">
+            <div className="w-16 h-16 text-red-500 mb-4"><ShieldAlert size={64} /></div>
+            <h1 className="text-3xl font-bold text-red-500 mb-4">CRITICAL SYSTEM FAILURE</h1>
+            <p className="text-white/60 mb-8 text-center max-w-2xl">The Sovereign Core has encountered an unrecoverable error during the neural sync process.</p>
+            <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg text-xs text-red-300 mb-8 overflow-auto max-w-full">
+                {this.state.error?.toString()}
+            </div>
+            <button 
+                onClick={() => {
+                    // Clear specific keys instead of everything if possible, but clear all is safer for "blank page"
+                    localStorage.removeItem('sovereign_core_engines_v17');
+                    localStorage.removeItem('sovereign_core_all_users_v18');
+                    localStorage.removeItem('sovereign_core_tx_v17');
+                    window.location.reload();
+                }}
+                className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold uppercase tracking-widest transition-colors"
+            >
+                Purge Data & Reboot
+            </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const App = () => {
+  const [view, setView] = useState('landing');
+  
+  // App-wide Loading States
+  const [isAppLoading, setIsAppLoading] = useState(false);
+  const [isReferralLoading, setIsReferralLoading] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+
+  const handleDeposit = async (details: any, amount: number) => {
     try {
-      localStorage.setItem('sovereign_core_view', view);
-    } catch (e) {}
+        const result = await openRouterPaymentService.processInstantPayment(details, amount);
+        if (result.success) {
+            setAllUsers(prev => prev.map(u => u.id === 'u_sov_malatji' ? { ...u, balance: (u.balance || 0) + amount } : u));
+            setTransactions(prev => [{
+                id: result.transactionId,
+                date: new Date(result.timestamp).toLocaleString(),
+                timestamp_ms: result.timestamp,
+                description: 'Open_Router Instant Deposit',
+                amount: amount,
+                type: 'credit',
+                status: 'Completed',
+                method: 'Open_Router_API',
+                txHash: result.transactionId,
+                logs: [
+                    { timestamp: new Date().toLocaleTimeString(), event: 'Payment Gateway Handshake', node: 'OPEN_ROUTER_EDGE' },
+                    { timestamp: new Date().toLocaleTimeString(), event: 'Settlement Authorized', node: 'SOV_TREASURY_CORE' }
+                ]
+            }, ...prev]);
+            addNotification({ category: 'tx', severity: 'success', title: 'Deposit Successful', message: `Successfully deposited $${amount.toFixed(2)} via Open_Router_API.` });
+        }
+    } catch (e: any) {
+        addNotification({ category: 'tx', severity: 'critical', title: 'Deposit Failed', message: e.message || 'Payment processing failed.' });
+        throw e;
+    }
+  };
+
+  const handleWithdrawal = async (details: any, amount: number) => {
+    // Simulate Bank Transfer
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setAllUsers(prev => prev.map(u => u.id === 'u_sov_malatji' ? { 
+        ...u, 
+        balance: (u.balance || 0) - amount,
+        totalWithdrawn: (u.totalWithdrawn || 0) + amount
+    } : u));
+
+    const txId = `WDL_${Date.now()}`;
+    setTransactions(prev => [{
+        id: txId,
+        date: new Date().toLocaleString(),
+        timestamp_ms: Date.now(),
+        description: 'Instant Bank Transfer',
+        amount: amount,
+        type: 'debit',
+        status: 'Completed',
+        method: 'RTP_Network',
+        txHash: txId,
+        logs: [
+            { timestamp: new Date().toLocaleTimeString(), event: 'Liquidity Exit Requested', node: 'SOV_TREASURY_CORE' },
+            { timestamp: new Date().toLocaleTimeString(), event: 'RTP Gateway Confirmed', node: 'BANK_Settlement_Node' }
+        ]
+    }, ...prev]);
+    
+    addNotification({ category: 'tx', severity: 'success', title: 'Withdrawal Initiated', message: `Successfully transferred $${amount.toFixed(2)} to bank account.` });
+  };
+
+  // SEO & Meta Management
+  useEffect(() => {
+    if (view === 'landing') {
+        document.title = "Sovereign Core | Autonomous Revenue Infrastructure";
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', 'Start your 14-day free trial. Automate income streams with Sovereign Core. Join our referral network and earn rewards.');
+        } else {
+            const meta = document.createElement('meta');
+            meta.name = "description";
+            meta.content = "Start your 14-day free trial. Automate income streams with Sovereign Core. Join our referral network and earn rewards.";
+            document.head.appendChild(meta);
+        }
+    }
   }, [view]);
+
+  // Remove persistence to ensure fresh start on reload
+  // useEffect(() => {
+  //   try {
+  //     localStorage.setItem('sovereign_core_view', view);
+  //   } catch (e) {}
+  // }, [view]);
   
   // Track API key selection status for mandatory models (Gemini 3 Pro Image)
   const [hasApiKey, setHasApiKey] = useState<boolean>(true);
@@ -1209,7 +1538,13 @@ const EngineDetailsModal = ({
       const saved = localStorage.getItem('sovereign_core_engines_v17');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed.filter(e => e !== null && e !== undefined);
+        if (Array.isArray(parsed)) {
+            return parsed.filter(e => e !== null && e !== undefined).map(e => ({
+                ...e,
+                revenue: Number(e.revenue || 0),
+                performance: Number(e.performance || 0)
+            }));
+        }
       }
     } catch (e) {}
     
@@ -1486,7 +1821,12 @@ const EngineDetailsModal = ({
       const saved = localStorage.getItem('sovereign_core_tx_v17');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed.filter(t => t !== null);
+        if (Array.isArray(parsed)) {
+            return parsed.filter(t => t !== null).map(t => ({
+                ...t,
+                amount: Number(t.amount || 0)
+            }));
+        }
       }
       return [
         {
@@ -1513,7 +1853,15 @@ const EngineDetailsModal = ({
     try {
       const saved = localStorage.getItem('sovereign_core_all_users_v18');
       const users = saved ? JSON.parse(saved) : null;
-      if (users && users.length > 0) return users;
+      if (users && Array.isArray(users)) {
+          return users.map(u => ({
+              ...u,
+              balance: Number(u.balance || 0),
+              lifetimeYield: Number(u.lifetimeYield || 0),
+              totalWithdrawn: Number(u.totalWithdrawn || 0),
+              referralEarnings: Number(u.referralEarnings || 0)
+          }));
+      }
     } catch (e) {}
     
     return [
@@ -1541,8 +1889,23 @@ const EngineDetailsModal = ({
   });
 
   const user = useMemo(() => {
+    // If no user found, return a default safe user to prevent crashes
     const found = allUsers.find(u => u && u.id === 'u_sov_malatji');
-    return found || allUsers[0];
+    if (found) return found;
+    
+    // Fallback safe user if state is empty/corrupted
+    return {
+        id: 'u_sov_malatji', name: 'MAPHALLE MALATJI', email: 'malatjimaphalle1@gmail.com', plan: 'Unlimited', role: 'Admin',
+        isVerified: true, balance: 1000000.00, lifetimeYield: 9999999.99, totalWithdrawn: 0.00, tier: 'Sovereign',
+        referralCode: 'GRID_SOV_ARCHITECT', referralCount: 9999, totalReferralNodes: 50000, referralEarnings: 500000.00,
+        trialEndsAt: new Date(Date.now() + 365 * 10 * 24 * 60 * 60 * 1000).toISOString(),
+        permissions: ['access_dashboard', 'access_nodes', 'access_creator_centre', 'access_forge', 'access_network', 'access_treasury', 'access_citadel', 'access_profile', 'access_admin_panel', 'access_system_core'],
+        referralHistory: [],
+        brandTheme: 'Sovereign Core',
+        brandAssets: [],
+        activeLogo: '',
+        alertPrefs: { engineStatus: true, transactions: true, referrals: true, security: true }
+    } as UserData;
   }, [allUsers]);
 
   // Dynamic Dashboard States
@@ -1597,19 +1960,21 @@ const EngineDetailsModal = ({
             if (data.referrals && Array.isArray(data.referrals)) {
                 // Update user state if new referrals found
                 if (data.referrals.length > (user.referralHistory?.length || 0)) {
-                    setAllUsers(prev => ({
-                        ...prev,
-                        [user.id]: {
-                            ...user,
-                            referralHistory: data.referrals,
-                            referralCount: data.referrals.length,
-                            totalReferralNodes: data.referrals.reduce((acc: number, r: any) => acc + (r.nodes || 0), 0),
-                            referralEarnings: data.referrals.reduce((acc: number, r: any) => acc + (r.reward || 0), 0)
+                    setAllUsers(prev => prev.map(u => {
+                        if (u.id === user.id) {
+                            return {
+                                ...u,
+                                referralHistory: data.referrals,
+                                referralCount: data.referrals.length,
+                                totalReferralNodes: data.referrals.reduce((acc: number, r: any) => (acc || 0) + (r.nodes || 0), 0),
+                                referralEarnings: data.referrals.reduce((acc: number, r: any) => (acc || 0) + (r.reward || 0), 0)
+                            };
                         }
+                        return u;
                     }));
                     
                     addNotification({
-                        category: 'referrals',
+                        category: 'referral',
                         severity: 'success',
                         title: 'New Real User Uplink',
                         message: 'A new user has joined the network via your signature.'
@@ -2453,24 +2818,7 @@ const EngineDetailsModal = ({
     }
   };
 
-  // State to track if loading is active for specific components
-  const [isAppLoading, setIsAppLoading] = useState(false);
-
   if (view === 'landing') {
-    // SEO Optimization
-    useEffect(() => {
-        document.title = "Sovereign Core | Autonomous Revenue Infrastructure";
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', 'Start your 14-day free trial. Automate income streams with Sovereign Core. Join our referral network and earn rewards.');
-        } else {
-            const meta = document.createElement('meta');
-            meta.name = "description";
-            meta.content = "Start your 14-day free trial. Automate income streams with Sovereign Core. Join our referral network and earn rewards.";
-            document.head.appendChild(meta);
-        }
-    }, []);
-
     if (isAppLoading) {
         return (
             <div className="min-h-screen bg-[#020202] flex items-center justify-center text-white">
@@ -2484,6 +2832,20 @@ const EngineDetailsModal = ({
 
     return (
       <div className="min-h-screen bg-[#020202] flex flex-col text-white relative overflow-x-hidden blueprint-bg">
+        {/* Navbar */}
+        <nav className="absolute top-0 w-full p-6 z-50 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-glow border border-blue-400">
+                    <Cpu size={16} />
+                </div>
+                <span className="text-lg font-black italic tracking-tighter uppercase">Sovereign</span>
+            </div>
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm" className="!text-white/60 hover:!text-white" onClick={() => setView('login')}>Sign In</Button>
+                <Button size="sm" onClick={() => { setIsAppLoading(true); setTimeout(() => { setView('dashboard'); setIsAppLoading(false); }, 1500); }}>Get Started</Button>
+            </div>
+        </nav>
+
         {/* Hero Section */}
         <div className="min-h-screen flex items-center justify-center p-6 md:p-10 relative z-10">
             <div className="max-w-4xl text-center space-y-8 md:space-y-12 relative z-10">
@@ -2508,7 +2870,7 @@ const EngineDetailsModal = ({
                           setTimeout(() => { 
                               setView('dashboard'); 
                               setIsAppLoading(false); 
-                          }, 1500); 
+                          }, 100); 
                       }} size="lg" className="h-16 md:h-20 px-8 md:px-16 text-xl md:text-2xl mx-auto shadow-glow w-full md:w-auto">Initialize Uplink</Button>
                       <p className="text-emerald-400 font-black uppercase text-[10px] tracking-widest italic">Includes 14-Day Free Trial Access</p>
                   </div>
@@ -2547,7 +2909,37 @@ const EngineDetailsModal = ({
     );
   }
 
-  const [isReferralLoading, setIsReferralLoading] = useState(false);
+  if (view === 'login') {
+      return (
+          <div className="min-h-screen bg-[#020202] flex items-center justify-center p-6 text-white blueprint-bg relative">
+              <div className="max-w-md w-full bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 space-y-8 shadow-2xl relative z-10">
+                  <div className="text-center space-y-2">
+                      <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-glow border border-blue-400">
+                          <Cpu size={32} />
+                      </div>
+                      <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">Access Core</h2>
+                      <p className="text-white/40 text-xs font-black uppercase tracking-widest italic">Enter Credentials for Neural Uplink</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <label className="text-[10px] uppercase font-black tracking-widest text-white/60">Identifier</label>
+                          <input type="email" placeholder="sovereign@grid.network" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500/50 transition-colors" />
+                      </div>
+                      <div className="space-y-2">
+                          <label className="text-[10px] uppercase font-black tracking-widest text-white/60">Passkey</label>
+                          <input type="password" placeholder="••••••••" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500/50 transition-colors" />
+                      </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                      <Button onClick={() => { setIsAppLoading(true); setTimeout(() => { setView('dashboard'); setIsAppLoading(false); }, 100); }} size="lg" className="w-full h-14 text-lg shadow-glow">Initiate Session</Button>
+                      <Button variant="ghost" size="sm" className="w-full text-white/40 hover:text-white" onClick={() => setView('landing')}>Return to Landing Grid</Button>
+                  </div>
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-[#020202] flex text-white overflow-hidden blueprint-bg relative">
@@ -3180,7 +3572,7 @@ const EngineDetailsModal = ({
                                <Button variant="outline" size="sm" className="w-full !text-[9px]" onClick={async () => { 
                                    try { 
                                        await navigator.clipboard.writeText(`https://autoincome.sovereign/join/${user?.referralCode}`); 
-                                       addNotification({ category: 'referrals', severity: 'success', title: 'Link Copied', message: 'Referral link ready for distribution.' });
+                                       addNotification({ category: 'referral', severity: 'success', title: 'Link Copied', message: 'Referral link ready for distribution.' });
                                    } catch(e) { console.error(e); } 
                                }}>Copy Direct Link</Button>
                                
@@ -3329,6 +3721,7 @@ const EngineDetailsModal = ({
                         <p className="text-[11px] font-black uppercase text-emerald-400 tracking-[0.4em] italic">Available Balance</p>
                         <p className="text-7xl font-black text-white italic tracking-tighter leading-none">${(user?.balance || 0).toFixed(2)}</p>
                       </div>
+                      <Button size="sm" onClick={() => setShowDepositModal(true)} icon={Plus} className="h-12 px-6 bg-blue-600 hover:bg-blue-500 shadow-glow">Add Funds</Button>
                     </div>
 
                     <div className="space-y-6 pt-6 border-t-2 border-white/10">
@@ -3383,6 +3776,11 @@ const EngineDetailsModal = ({
                       >
                         Authorize Liquid Exit
                       </Button>
+                      <div className="pt-4 border-t border-white/10 text-center">
+                          <button onClick={() => setShowWithdrawalModal(true)} className="text-[10px] font-black uppercase text-blue-400 hover:text-white transition-colors tracking-widest italic flex items-center justify-center gap-2 w-full">
+                              <Building2 size={12} /> Or Withdraw via Instant Bank Transfer
+                          </button>
+                      </div>
                     </div>
                   </Card>
 
@@ -4052,6 +4450,19 @@ const EngineDetailsModal = ({
             onUpdate={handleUpdateCredentials}
         />
       )}
+      {showDepositModal && (
+        <DepositModal 
+            onClose={() => setShowDepositModal(false)} 
+            onDeposit={handleDeposit}
+        />
+      )}
+      {showWithdrawalModal && (
+        <WithdrawalModal 
+            onClose={() => setShowWithdrawalModal(false)} 
+            onWithdraw={handleWithdrawal}
+            balance={user?.balance || 0}
+        />
+      )}
     </div>
   );
 };
@@ -4059,5 +4470,9 @@ const EngineDetailsModal = ({
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(<App />);
+  root.render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
 }

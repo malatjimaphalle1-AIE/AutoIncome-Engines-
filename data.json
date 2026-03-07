@@ -10,5 +10,16 @@
       "date": "2026-03-05",
       "timestamp": 1772732548056
     }
-  ]
+  ],
+  "users": [
+    {
+      "id": "user_1772748020984_ulqje",
+      "email": "test_1772748020747@example.com",
+      "password": "$2b$10$w4E/3uOWL/w1Pa92BEPvAuWaCkFho3V0p9xHjer5iWgP8WqH6cC.6",
+      "name": "Test User",
+      "createdAt": "2026-03-05T22:00:20.984Z",
+      "role": "user"
+    }
+  ],
+  "referralClicks": []
 }
