@@ -7,7 +7,7 @@
 ## Sovereign Wealth Automation & AI Revenue Nodes
 
 Deploy institutional-grade wealth automation with AutoIncome Engines™. This system allows you to manage autonomous neural nodes, generate passive yield, and oversee sovereign digital assets through a high-fidelity dashboard.
-
+**Live Domain:** [https://freedomwheels.online](https://freedomwheels.online)
 **Live Deployment:** [https://auto-income-engines.vercel.app](https://auto-income-engines.vercel.app)  
 **Repository:** [https://github.com/malatjimaphalle1-AIE/autoincome-engines-](https://github.com/malatjimaphalle1-AIE/autoincome-engines-)
 
